@@ -4,80 +4,70 @@
 #include <string.h>
 #include <ctype.h>
 
-bool validation(string number);
+bool checksum(string number, int length);
 
 int main(void)
 {
-    string number;
-    int length;
+    string number = get_string("Enter a credit card number: ");
+    int length = strlen(number);
+    int first = number[0];
+    int second = number[1];
 
-    while (true)
+    if (checksum(number, length))
     {
-        number = get_string("Number: ");
-        length = strlen(number);
-
-        bool all_digits = true;
-        for (int i = 0; i < length; i++)
+        // length of a AMEX card, ascii decimal values for comparement numbers (34 & 37);
+        if (length == 15 && ((first == 51 && second == 52) || (first == 51 && second == 55)))
         {
-            if (!isdigit(number[i]))
-            {
-                all_digits = false;
-            }
+            printf("AMEX\n");
         }
-        if (all_digits)
+        // length of a Mastercard, ascii decimal values for comparement numbers (51, 52, 53, 54 & 55);
+        else if (length == 16 && ((first == 53 && second == 49) || (first == 53 && second == 50) || (first == 53 && second == 51) || (first == 53 && second == 52) || (first == 53 && second == 53)))
         {
-            break;
+            printf("MASTERCARD\n");
+        }
+        // length of a Visa card, ascii decimal values for comparement numbers (4);
+        else if ((length == 13 || length == 16) && (first == 52))
+        {
+            printf("VISA\n");
+        }
+        // length of a AMEX card, ascii decimal values for comparement numbers (34, 37);
+        else
+        {
+            printf("INVALID\n");
         }
     }
-
-    if (!validation(number))
-    {
-        printf("INVALID\n");
-        return 0;
-    }
-
-    if (length == 15 && number[0] == '3' && (number[1] == '4' || number[1] == '7'))
-    {
-        printf("AMEX\n");
-    }
-
-    else if (length == 16 && number[0] == '5' && (number[1] >= '1' && number[1] <= '5'))
-    {
-        printf("MASTERCARD\n");
-    }
-
-    else if ((length == 13 || length == 16) && number[0] == '4')
-    {
-        printf("VISA\n");
-    }
-
     else
     {
-        printf("INVALID\n");
+         printf("INVALID\n");
     }
-
-    return 0;
 }
 
-bool validation(string number)
+
+bool checksum(string number, int length)
 {
-    int length = strlen(number);
-    int sum = 0;
+    int totalSum = 0;
+    bool multiply = false;
+    int digit;
 
-    for (int i = 0; i < length; i++)
+    // count down, reading from end
+    for (int i = length - 1; i >= 0; i--)
     {
-        int digit = number[length - 1 - i] - '0';
+        //convert string number to real number;
+        digit = number[i] - '0';
 
-        if (i % 2 == 1)
+        if (multiply)
         {
-            int product = digit * 2;
-            sum += (product / 10) + (product % 10);
+            //Focused Multiply, do the mutlplication process
+            int focusMul = digit * 2;
+
+            totalSum += (focusMul / 10) + (focusMul % 10);
         }
         else
         {
-            sum += digit;
+            totalSum += digit;
         }
-    }
 
-    return (sum % 10 == 0);
+        multiply = !multiply;
+    }
+    return (totalSum % 10 == 0);
 }
